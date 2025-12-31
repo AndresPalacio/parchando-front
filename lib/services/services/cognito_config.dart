@@ -24,8 +24,12 @@ class CognitoConfig {
   // IMPORTANTE: Esta URL debe estar registrada en AWS Cognito como callback URL
   // NOTA: La barra final (/) es importante para que coincida con Cognito
   static const String webDevelopmentPort = '3000';
-  static String get webRedirectUri => 'http://localhost:$webDevelopmentPort/';
-  static String get webSignOutUri => 'http://localhost:$webDevelopmentPort/';
+ // static String get webRedirectUri => 'http://localhost:$webDevelopmentPort/';
+ // static String get webSignOutUri => 'http://localhost:$webDevelopmentPort/';
+
+static String get webRedirectUri => 'https://master.de15vlrxbzx0z.amplifyapp.com/';
+ static String get webSignOutUri => 'https://master.de15vlrxbzx0z.amplifyapp.com/';
+
 
   // Redirect URI - Debe coincidir con la configurada en Google Console y Cognito
   // Para web: usa una URL fija para desarrollo (configurable arriba)
