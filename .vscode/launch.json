@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Web (Puerto 3000)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "args": [
+        "--web-port=3000"
+      ],
+      "flutterMode": "debug"
+    },
+    {
+      "name": "Flutter Web (Puerto 3000) - Profile",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "args": [
+        "--web-port=3000"
+      ],
+      "flutterMode": "profile"
+    },
+    {
+      "name": "Flutter Web (Puerto 3000) - Release",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "args": [
+        "--web-port=3000"
+      ],
+      "flutterMode": "release"
+    }
+  ]
+}
+

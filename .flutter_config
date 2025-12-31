@@ -1,0 +1,9 @@
+# Configuración de Flutter para Parchando App
+# Este archivo contiene configuraciones personalizadas del proyecto
+
+# Puerto por defecto para desarrollo web
+WEB_PORT=3000
+
+# Dispositivo por defecto para desarrollo web
+WEB_DEVICE=chrome
+

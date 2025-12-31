@@ -1,0 +1,10 @@
+{
+  "dart.flutterRunAdditionalArgs": [
+    "--web-port=3000"
+  ],
+  "dart.flutterHotReloadOnSave": "always",
+  "dart.debugExternalPackageLibraries": true,
+  "dart.debugSdkLibraries": false,
+  "dart.lineLength": 80
+}
+
