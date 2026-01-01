@@ -27,9 +27,6 @@ class ApiHeadersHelper {
   ///    - accessToken: el token JWT completo
   ///    - headers: los headers finales que se enviarán
   static Future<Map<String, String>> getAuthHeaders() async {
-
-    safePrint('🔐 [DEBUG] Provider: Headers');
-
     final headers = <String, String>{
       'Content-Type': 'application/json',
     };
@@ -43,37 +40,19 @@ class ApiHeadersHelper {
         // 3. Obtener el Access Token directamente
         final accessToken = result.userPoolTokensResult.value.idToken.raw;
 
-
         if (accessToken.isNotEmpty) {
           // ✅ Usuario logueado: usar Access Token
           // IMPORTANTE: El formato debe ser "Bearer {token}" con espacio
           headers['Authorization'] = 'Bearer $accessToken';
-          if (kDebugMode) {
-            print('✅ [ApiHeadersHelper] Access Token agregado a headers');
-            print('🔍 [ApiHeadersHelper] Header Authorization: Bearer ${accessToken.substring(0, accessToken.length > 20 ? 20 : accessToken.length)}...');
-          }
           return headers;
-        } else {
-          if (kDebugMode) {
-            print('⚠️ [ApiHeadersHelper] Access Token vacío');
-          }
-        }
-      } else {
-        if (kDebugMode) {
-          print('⚠️ [ApiHeadersHelper] Usuario no autenticado (isSignedIn: false)');
         }
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('⚠️ [ApiHeadersHelper] Error obteniendo Access Token: $e');
-      }
+      // Error obteniendo token, usar fallback
     }
 
     // 4. Fallback: usar X-Test-User-Id para debug/local
     headers['X-Test-User-Id'] = testUserId;
-    if (kDebugMode) {
-      print('🔧 [ApiHeadersHelper] Usando X-Test-User-Id (modo debug/local)');
-    }
 
     return headers;
   }

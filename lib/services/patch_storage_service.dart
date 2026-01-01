@@ -14,9 +14,6 @@ class PatchStorageService {
 
   Future<List<Patch>> getPatches({String? userId}) async {
     try {
-
-      safePrint('🔐 [DEBUG] Iniciando getPatches...');
-
       final headers = await ApiHeadersHelper.getAuthHeaders();
 
       final response = await http.get(
@@ -26,9 +23,6 @@ class PatchStorageService {
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        print('📥 Respuesta del backend parseada:');
-        print('  - Tipo: ${decoded.runtimeType}');
-        print('  - Keys: ${decoded is Map ? (decoded as Map).keys.toList() : 'N/A'}');
         
         // Manejar si el backend devuelve un objeto con wrapper o array directo
         // El backend devuelve: {"items": [...], "count": X, ...}
@@ -36,31 +30,21 @@ class PatchStorageService {
             ? decoded 
             : (decoded['items'] ?? decoded['data'] ?? decoded['patches'] ?? decoded['parches'] ?? []);
         
-        print('  - Parches encontrados: ${patchesJson.length}');
-        
         final List<Patch> patches = [];
         for (var json in patchesJson) {
           try {
             final patch = Patch.fromJson(json as Map<String, dynamic>);
             patches.add(patch);
-            print('  - ✅ Parche parseado: ${patch.name} (${patch.id})');
-          } catch (e, stackTrace) {
-            print('  - ❌ Error parseando parche: $e');
-            print('  - JSON: $json');
-            print('  - Stack: $stackTrace');
+          } catch (e) {
+            // Error parseando parche, continuar con el siguiente
           }
         }
         
-        print('  - Total parches parseados: ${patches.length}');
         return patches;
       } else {
-        print('❌ Failed to load patches: ${response.statusCode}');
-        print('  - Body: ${response.body}');
         return [];
       }
-    } catch (e, stackTrace) {
-      print('❌ Error loading patches: $e');
-      print('  - Stack: $stackTrace');
+    } catch (e) {
       return [];
     }
   }

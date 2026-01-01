@@ -8,7 +8,6 @@ class AppAmplifyConfig {
   static Future<void> configure() async {
     try {
       if (Amplify.isConfigured) {
-        print('⚠️ Amplify ya está configurado.');
         return;
       }
 
@@ -81,24 +80,7 @@ class AppAmplifyConfig {
 
       final configJson = jsonEncode(amplifyConfig);
       
-      // Formatear JSON para mejor legibilidad
-      final jsonEncoder = JsonEncoder.withIndent('  ');
-      final formattedJson = jsonEncoder.convert(amplifyConfig);
-      
-      print('🔍 Configurando Amplify con JSON...');
-      print('📍 Plataforma: ${kIsWeb ? "Web" : "Móvil"}');
-      print('🔗 SignInRedirectURI: $signInRedirectUri');
-      print('🔗 SignOutRedirectURI: $signOutRedirectUri');
-      print('');
-      print('📋 JSON de configuración completo:');
-      print('─' * 80);
-      print(formattedJson);
-      print('─' * 80);
-      print('');
-      
       await Amplify.configure(configJson);
-      
-      print('✅ Amplify configurado correctamente');
       
     } catch (e) {
       print('❌ Error configurando Amplify: $e');

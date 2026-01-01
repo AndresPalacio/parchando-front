@@ -1,92 +1,152 @@
-version: 1.0
+version: 1
 frontend:
   phases:
     preBuild:
       commands:
         - echo "Installing Flutter SDK - Debug Version"
-        - |
+        - >
           export FLUTTER_VERSION=3.32.8
+
           export PATH="$PATH:$(pwd)/flutter/bin"
-          
+
+
           echo "Downloading Flutter $FLUTTER_VERSION..."
+
           git clone https://github.com/flutter/flutter.git --depth 1 -b $FLUTTER_VERSION flutter
-          
+
+
           echo "Configuring Flutter..."
+
           export PATH="$PATH:$(pwd)/flutter/bin"
+
           flutter config --no-analytics
+
           flutter config --enable-web
-          
+
+
           echo "Verifying Flutter setup..."
+
           flutter --version
+
           flutter doctor
-          
+
+
           echo "Checking web files..."
+
           ls -la web/
-          
+
+
           echo "Getting dependencies..."
+
           flutter pub get
-          
+
+
           echo "Running build_runner (if needed)..."
+
           flutter pub run build_runner build --delete-conflicting-outputs || echo "build_runner skipped (no files to generate)"
-          
+
+
           echo "Flutter setup completed successfully"
     build:
       commands:
-        - |
-          export PATH="$PATH:$(pwd)/flutter/bin"
-          echo "=== BUILD PHASE START ==="
-          
-          echo "Current directory:"
+        - "export PATH=\"$PATH:$(pwd)/flutter/bin\"
+
+          echo \"=== BUILD PHASE START ===\"
+
+
+          echo \"Current directory:\"
+
           pwd
+
           ls -la
-          
-          echo "Flutter version check:"
+
+
+          echo \"Flutter version check:\"
+
           flutter --version
-          
-          echo "Cleaning previous builds..."
+
+
+          echo \"Cleaning previous builds...\"
+
           flutter clean
-          
-          echo "Re-getting dependencies..."
+
+
+          echo \"Re-getting dependencies...\"
+
           flutter pub get
-          
-          echo "Starting Flutter build web..."
+
+
+          echo \"Starting Flutter build web...\"
+
           if ! flutter build web --release; then
-            echo "⚠️ Build with default options failed, trying without optimizations..."
-            if ! flutter build web --release --no-tree-shake-icons; then
-              echo "⚠️ Build still failed, trying minimal build..."
-              flutter build web --release --no-tree-shake-icons --no-sound-null-safety || {
-                echo "❌ All build attempts failed!"
-                exit 1
-              }
-            fi
+
+          \  echo \"â ï¸ Build with default options failed, trying
+          without optimizations...\"
+
+          \  if ! flutter build web --release --no-tree-shake-icons;
+          then
+
+          \    echo \"â ï¸ Build still failed, trying minimal
+          build...\"
+
+          \    flutter build web --release --no-tree-shake-icons
+          --no-sound-null-safety || {
+
+          \      echo \"â All build attempts failed!\"
+
+          \      exit 1
+
+          \    }
+
+          \  fi
+
           fi
-          
+
+
           # Verificar que build/web existe
-          if [ ! -d "build/web" ]; then
-            echo "❌ ERROR: build/web directory was not created!"
-            echo "Build failed. Exiting..."
-            exit 1
+
+          if [ ! -d \"build/web\" ]; then
+
+          \  echo \"â ERROR: build/web directory was not created!\"
+
+          \  echo \"Build failed. Exiting...\"
+
+          \  exit 1
+
           fi
-          
-          echo "✅ Build successful! build/web directory exists"
+
+
+          echo \"â Build successful! build/web directory exists\"
+
           ls -la build/web/
-          
-          echo "Fixing assets structure..."
-          if [ -d "build/web/assets/assets" ]; then
-            echo "Moving assets from build/web/assets/assets to build/web/assets..."
-            cp -r build/web/assets/assets/* build/web/assets/ 2>/dev/null || true
-            rm -rf build/web/assets/assets
-            echo "Assets structure fixed!"
+
+
+          echo \"Fixing assets structure...\"
+
+          if [ -d \"build/web/assets/assets\" ]; then
+
+          \  echo \"Moving assets from build/web/assets/assets to
+          build/web/assets...\"
+
+          \  cp -r build/web/assets/assets/* build/web/assets/
+          2>/dev/null || true
+
+          \  rm -rf build/web/assets/assets
+
+          \  echo \"Assets structure fixed!\"
+
           fi
-          
-          echo "Final verification of build/web:"
+
+
+          echo \"Final verification of build/web:\"
+
           ls -la build/web/
-          echo "=== BUILD PHASE END ==="
-          
+
+          echo \"=== BUILD PHASE END ===\"\n"
   artifacts:
     baseDirectory: build/web
     files:
-      - '**/*'
+      - "**/*"
   cache:
     paths:
       - flutter/.pub-cache

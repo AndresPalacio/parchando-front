@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 
 import 'upload_receipt_screen.dart';
 import '../models/patch.dart';
@@ -17,6 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late PatchStorageService _patchStorage;
   List<Patch> _patches = [];
   bool _isLoading = true;
+  String? _userName;
+  String? _userEmail;
 
   @override
   void initState() {
@@ -27,9 +31,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initializeStorage() async {
     _patchStorage = PatchStorageService();
     
+    // Cargar información del usuario
+    await _loadUserInfo();
+    
     // Solo cargar los parches al inicio
     // Las facturas y friends solo se cargarán cuando se necesiten para editar
     await _loadPatches();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final user = await getCurrentUser();
+      setState(() {
+        _userName = user.username;
+        _userEmail = user.signInDetails?.loginId;
+      });
+    } catch (e) {
+      // Si no se puede obtener el usuario, usar valores por defecto
+      setState(() {
+        _userName = null;
+        _userEmail = null;
+      });
+    }
   }
 
   Future<void> _loadPatches() async {
@@ -76,90 +99,128 @@ class _HomeScreenState extends State<HomeScreen> {
           SafeArea(
             child: Column(
               children: [
-                // Header con Búsqueda
+                // Header moderno tipo Uber
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                  child: Row(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                      // Primera fila: Saludo y notificaciones
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getGreeting(),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _userName ?? 'Usuario',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                    letterSpacing: -0.5,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.notifications_outlined, 
+                                  color: Colors.black87, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              PopupMenuButton<String>(
+                                icon: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E2B45),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: _userName != null
+                                    ? Center(
+                                        child: Text(
+                                          _userName!.substring(0, 1).toUpperCase(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      )
+                                    : const Icon(Icons.person, color: Colors.white, size: 20),
+                                ),
+                                onSelected: (value) {
+                                  if (value == 'logout') {
+                                    _handleLogout();
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) => [
+                                  const PopupMenuItem<String>(
+                                    value: 'logout',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.logout, color: Colors.red, size: 20),
+                                        SizedBox(width: 12),
+                                        Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.search, color: Colors.grey[400]),
-                              const SizedBox(width: 12),
-                              Text(
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // Barra de búsqueda
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.search, color: Colors.grey[400], size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
                                 'Buscar facturas, amigos...',
                                 style: TextStyle(
                                   color: Colors.grey[400],
                                   fontSize: 14,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.notifications_outlined, color: Colors.black87),
-                      ),
-                      const SizedBox(width: 12),
-                      PopupMenuButton<String>(
-                        icon: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(Icons.account_circle_outlined, color: Colors.black87),
-                        ),
-                        onSelected: (value) {
-                          if (value == 'logout') {
-                            _handleLogout();
-                          }
-                        },
-                        itemBuilder: (BuildContext context) => [
-                          const PopupMenuItem<String>(
-                            value: 'logout',
-                            child: Row(
-                              children: [
-                                Icon(Icons.logout, color: Colors.red),
-                                SizedBox(width: 12),
-                                Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
-                              ],
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -169,24 +230,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     children: [
-                      const Text(
-                        'Hola,',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const Text(
-                        'Jelly!',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
                       
                       // Summary Card
                       Container(
@@ -426,6 +469,17 @@ class _HomeScreenState extends State<HomeScreen> {
   double _calculateTotalUnpaid() {
     // El balance total se calculará cuando se necesite, no en el home
     return 0.0;
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Buenos días';
+    } else if (hour < 18) {
+      return 'Buenas tardes';
+    } else {
+      return 'Buenas noches';
+    }
   }
 
   Future<void> _handleLogout() async {
