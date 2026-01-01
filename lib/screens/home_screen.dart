@@ -42,9 +42,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadUserInfo() async {
     try {
       final user = await getCurrentUser();
+      final attributes = await Amplify.Auth.fetchUserAttributes();
+      
+      String? name;
+      String? email;
+      
+      // Buscar email y nombre en los atributos
+      for (final attr in attributes) {
+        if (attr.userAttributeKey == CognitoUserAttributeKey.email) {
+          email = attr.value;
+        } else if (attr.userAttributeKey == CognitoUserAttributeKey.name) {
+          name = attr.value;
+        } else if (attr.userAttributeKey == CognitoUserAttributeKey.givenName) {
+          name = attr.value;
+        }
+      }
+      
+      // Si no hay nombre, usar el email o el userId
+      name = name ?? email ?? user.userId;
+      
       setState(() {
-        _userName = user.username;
-        _userEmail = user.signInDetails?.loginId;
+        _userName = name;
+        _userEmail = email;
       });
     } catch (e) {
       // Si no se puede obtener el usuario, usar valores por defecto
@@ -152,8 +171,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Container(
                                   width: 40,
                                   height: 40,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1E2B45),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF1E2B45),
                                     shape: BoxShape.circle,
                                   ),
                                   child: _userName != null
