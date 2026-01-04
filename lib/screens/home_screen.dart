@@ -4,12 +4,9 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 
 import 'upload_receipt_screen.dart';
 import '../models/patch.dart';
-import '../models/saved_bill.dart';
 import '../services/patch_storage_service.dart';
-import '../services/bill_storage_service.dart';
 import '../widgets/patch_card.dart';
 import '../services/services/auth_service.dart';
-import 'bill_edit_screen.dart';
 import 'edit_patch_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,11 +18,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late PatchStorageService _patchStorage;
-  late BillStorageService _billStorage;
   List<Patch> _patches = [];
-  List<SavedBill> _bills = [];
   bool _isLoading = true;
-  bool _isLoadingBills = false;
 
   @override
   void initState() {
@@ -35,13 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initializeStorage() async {
     _patchStorage = PatchStorageService();
-    _billStorage = BillStorageService();
     
-    // Cargar parches y bills al inicio
-    await Future.wait([
-      _loadPatches(),
-      _loadBills(),
-    ]);
+    // Cargar parches al inicio
+    await _loadPatches();
   }
 
   Future<void> _loadPatches() async {
@@ -57,52 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
-
-  Future<void> _loadBills() async {
-    if (!mounted) return;
-    setState(() {
-      _isLoadingBills = true;
-    });
-    try {
-      final bills = await _billStorage.getSavedBills();
-      if (mounted) {
-        setState(() {
-          _bills = bills;
-          _isLoadingBills = false;
-        });
-      }
-    } catch (e) {
-      print('Error cargando bills: $e');
-      if (mounted) {
-        setState(() {
-          _isLoadingBills = false;
-        });
-      }
-    }
-  }
-
-  /// Navega a la pantalla de edición de un bill
-  Future<void> _editBill(SavedBill bill) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BillEditScreen(
-          items: bill.items,
-          totalBill: bill.total,
-          taxes: bill.taxes,
-          receiptName: bill.name,
-          billId: bill.id,
-          patchId: bill.patchId,
-        ),
-      ),
-    );
-
-    // Si se guardaron cambios, recargar la lista de bills
-    if (result != null) {
-      await _loadBills();
-    }
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'Buscar facturas, amigos...',
+                                  'Buscar parches, amigos...',
                                   style: TextStyle(
                                     color: Colors.grey[400],
                                     fontSize: 14,
@@ -268,112 +212,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       
-                      const SizedBox(height: 32),
-
-                      // SECCIÓN DE BILLS (Facturas)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Tus Facturas',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (_isLoadingBills)
-                        const Center(child: CircularProgressIndicator())
-                      else if (_bills.isEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(32),
-                          alignment: Alignment.center,
-                          child: Column(
-                            children: [
-                              Icon(Icons.receipt_long_outlined,
-                                  size: 48, color: Colors.grey[300]),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No hay facturas aún',
-                                style: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        Column(
-                          children: _bills.map((bill) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () => _editBill(bill),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: Colors.grey[200]!),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue[100],
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Icon(
-                                            Icons.receipt,
-                                            color: Colors.blue[700],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                bill.name,
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                '${bill.items.length} item${bill.items.length != 1 ? 's' : ''} • \$${bill.total.toStringAsFixed(0)}',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[600],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.chevron_right,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-
                       const SizedBox(height: 32),
 
                       // SECCIÓN DE PARCHES
