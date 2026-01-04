@@ -18,9 +18,32 @@ class User {
   });
 
   String get initials {
-    final parts = name.split(' ');
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    // Limpiar el nombre de espacios al inicio y final
+    final cleanName = name.trim();
+    
+    // Si el nombre está vacío, retornar '?'
+    if (cleanName.isEmpty) return '?';
+    
+    // Dividir por espacios y filtrar strings vacíos
+    final parts = cleanName.split(' ').where((part) => part.isNotEmpty).toList();
+    
+    // Si no hay partes válidas, retornar '?'
+    if (parts.isEmpty) return '?';
+    
+    // Si solo hay una parte, usar el primer carácter
+    if (parts.length == 1) {
+      return parts[0].isNotEmpty ? parts[0][0].toUpperCase() : '?';
+    }
+    
+    // Si hay múltiples partes, usar el primer carácter de las dos primeras
+    final first = parts[0].isNotEmpty ? parts[0][0] : '';
+    final second = parts[1].isNotEmpty ? parts[1][0] : '';
+    
+    if (first.isEmpty && second.isEmpty) return '?';
+    if (first.isEmpty) return second.toUpperCase();
+    if (second.isEmpty) return first.toUpperCase();
+    
+    return '${first}${second}'.toUpperCase();
   }
 
   Map<String, dynamic> toJson() {

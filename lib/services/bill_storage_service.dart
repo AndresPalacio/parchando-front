@@ -205,4 +205,89 @@ class BillStorageService {
       rethrow;
     }
   }
+
+  /// Obtiene todos los bills asociados a un parche específico
+  Future<List<SavedBill>> getBillsByPatchId(String patchId, {String? userId}) async {
+    try {
+      final headers = await ApiHeadersHelper.getAuthHeaders();
+      
+      print('🔍 Obteniendo bills del parche:');
+      print('  - Patch ID: $patchId');
+      print('  - URL: $baseUrl/parches/$patchId/bills');
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/parches/$patchId/bills'),
+        headers: headers,
+      );
+
+      print('📥 Respuesta del backend:');
+      print('  - Status: ${response.statusCode}');
+      print('  - Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> billsJson = decoded is List 
+            ? decoded 
+            : (decoded['data'] ?? decoded['bills'] ?? decoded['items'] ?? []);
+        
+        final bills = billsJson.map((json) {
+          try {
+            return SavedBill.fromJson(json as Map<String, dynamic>);
+          } catch (e) {
+            print('❌ Error parseando bill: $e');
+            print('  - Bill JSON: $json');
+            return null;
+          }
+        }).where((bill) => bill != null).cast<SavedBill>().toList();
+        
+        print('✅ Bills parseados exitosamente: ${bills.length}');
+        return bills;
+      } else if (response.statusCode == 405 || response.statusCode == 404) {
+        // El endpoint no está implementado, usar fallback
+        print('⚠️ Endpoint GET /parches/{id}/bills no disponible (${response.statusCode}). Usando fallback...');
+        return await _getBillsByPatchIdFallback(patchId);
+      } else {
+        print('❌ Failed to get bills by patch: ${response.statusCode}');
+        // Fallback: obtener todos los bills y filtrar por patchId
+        return await _getBillsByPatchIdFallback(patchId);
+      }
+    } catch (e) {
+      print('❌ Error getting bills by patch: $e');
+      // Fallback: obtener todos los bills y filtrar por patchId
+      return await _getBillsByPatchIdFallback(patchId);
+    }
+  }
+
+  /// Fallback: Obtiene todos los bills y filtra por patchId
+  Future<List<SavedBill>> _getBillsByPatchIdFallback(String patchId) async {
+    try {
+      print('🔄 Usando fallback: obteniendo todos los bills y filtrando por patchId...');
+      print('  - Patch ID buscado: $patchId');
+      final allBills = await getSavedBills();
+      print('  - Total de bills obtenidos: ${allBills.length}');
+      
+      // Debug: mostrar patchIds de todos los bills
+      for (var bill in allBills) {
+        print('  - Bill: ${bill.name} - patchId: ${bill.patchId}');
+      }
+      
+      final filteredBills = allBills.where((bill) {
+        final matches = bill.patchId == patchId;
+        if (!matches && bill.patchId != null) {
+          print('  - No coincide: bill.patchId=${bill.patchId} vs buscado=$patchId');
+        }
+        return matches;
+      }).toList();
+      
+      print('✅ Bills encontrados con fallback: ${filteredBills.length}');
+      if (filteredBills.isEmpty && allBills.isNotEmpty) {
+        print('⚠️ No se encontraron bills con patchId=$patchId');
+        print('  - PatchIds disponibles: ${allBills.map((b) => b.patchId).toSet().toList()}');
+      }
+      return filteredBills;
+    } catch (e) {
+      print('❌ Error en fallback: $e');
+      return [];
+    }
+  }
 }

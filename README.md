@@ -106,7 +106,7 @@ https://us-east-1.console.aws.amazon.com/cognito/v2/idp/user-pools/us-east-1_wC8
 
 
 
-utputs:
+Outputs:
 ParchandoApiWithCognitoStack.CognitoDomain = parchando-prod
 ParchandoApiWithCognitoStack.CognitoRegion = us-east-1
 ParchandoApiWithCognitoStack.CognitoUserPoolClientId = hu2asksok5oljjdqmop25gic0
@@ -116,3 +116,8 @@ ParchandoApiWithCognitoStack.ParchandoApiUrlWithCognito = https://sbz5mzdtp6.exe
 ParchandoApiWithCognitoStack.ParchandoLambdaFunctionNameWithCognito = ParchandoApiWithCognitoSt-ParchandoFastApiCognitoF-EI5Lm38HwEev
 ParchandoApiWithCognitoStack.ParchandoTableNameWithCognito = parchando
 ParchandoApiWithCognitoStack.ParchandoUploadsBucketNameWithCognito = parchando-uploads-9338-cognito
+
+
+https://blog.flutter.dev/rich-and-dynamic-user-interfaces-with-flutter-and-generative-ui-178405af2455
+debe de ser meroparche  
+

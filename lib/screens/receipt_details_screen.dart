@@ -10,7 +10,7 @@ import '../services/patch_storage_service.dart';
 import '../models/patch.dart';
 import 'bill_split_screen.dart';
 import 'add_friends_screen.dart';
-import 'bill_edit_screen.dart' as edit;
+import 'create_bill_screen.dart';
 
 class ReceiptDetailsScreen extends StatefulWidget {
   final List<BillItem> items;
@@ -489,16 +489,15 @@ class _ReceiptDetailsScreenState extends State<ReceiptDetailsScreen> {
                         return;
                       }
 
-                      // Navegar a BillEditScreen con el parcheId creado
+                      // Navegar a CreateBillScreen con el parcheId creado
                       final editResult = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => edit.BillEditScreen(
+                          builder: (context) => CreateBillScreen(
                             items: widget.items,
                             totalBill: widget.totalBill,
                             taxes: widget.taxes,
                             receiptName: _receiptName,
-                            billId: null, // No hay billId todavía
                             patchId: parcheId,
                           ),
                         ),
